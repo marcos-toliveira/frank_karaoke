@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Frank Karaoke Desktop",
+  "version": "0.4.0",
+  "description": "Transforma o YouTube em um aplicativo de Karaokê com pontuação em tempo real e análise de afinação.",
+  "icons": {
+    "128": "icon.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.youtube.com/*"
+      ],
+      "js": [
+        "bandpass.js",
+        "yin.js",
+        "scoring.js",
+        "overlay.js",
+        "content.js"
+      ],
+      "run_at": "document_end"
+    }
+  ]
+}

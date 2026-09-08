@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Frank Karaoke
+GenericName=Karaokê com Pontuação em Tempo Real
+Comment=Transforma o YouTube em um aplicativo de Karaokê com pontuação ao vivo
+Exec=/home/marcos/Projetos/frank_karaoke/desktop/frank-karaoke-desktop.sh %U
+Icon=/home/marcos/Projetos/frank_karaoke/desktop/icon.png
+Terminal=false
+Categories=AudioVideo;Audio;Player;Music;
+Keywords=karaoke;youtube;music;singing;frank;
+StartupNotify=true
+StartupWMClass=google-chrome
