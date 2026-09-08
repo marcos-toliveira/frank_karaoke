@@ -22,6 +22,16 @@ if [ -z "$CHROME_BIN" ]; then
     exit 1
 fi
 
+if [ "$1" = "--setup" ] || [ "$1" = "--extensions" ]; then
+    echo "Abrindo gerenciador de extensões no perfil dedicado..."
+    echo "Dica: Ative 'Modo do desenvolvedor' e clique em 'Carregar sem compactação' apontando para: ${EXT_DIR}"
+    exec "$CHROME_BIN" \
+        --user-data-dir="${PROFILE_DIR}" \
+        --no-first-run \
+        --no-default-browser-check \
+        "chrome://extensions"
+fi
+
 echo "Iniciando Frank Karaoke Desktop via ${CHROME_BIN}..."
 
 exec "$CHROME_BIN" \
