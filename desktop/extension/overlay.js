@@ -44,7 +44,7 @@ class KaraokeOverlay {
     leftControls.style.cssText = 'display:flex;align-items:center;gap:12px;pointer-events:auto;';
 
     const gearBtn = document.createElement('button');
-    gearBtn.innerHTML = '&#9881;';
+    gearBtn.textContent = '⚙';
     gearBtn.title = 'Configurações do Frank Karaoke';
     gearBtn.style.cssText = 'width:44px;height:44px;border-radius:22px;background:rgba(26,26,46,0.85);backdrop-filter:blur(8px);border:1px solid rgba(108,92,231,0.5);color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(0,0,0,0.4);transition:transform 0.2s;';
     gearBtn.onmouseenter = () => gearBtn.style.transform = 'scale(1.08)';
@@ -160,70 +160,94 @@ class KaraokeOverlay {
   }
 
   _setupModals() {
-    // Settings modal overlay
     const modalBg = document.createElement('div');
     modalBg.id = 'fk-settings-modal';
     modalBg.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:1000000;pointer-events:auto;';
 
     const card = document.createElement('div');
-    card.style.cssText = 'background:#1a1a2e;border:1px solid rgba(108,92,231,0.5);border-radius:24px;padding:28px 36px;color:#fff;width:min(90%,460px);box-shadow:0 12px 40px rgba(0,0,0,0.6);';
+    card.style.cssText = 'background:#1a1a2e;border:1px solid rgba(108,92,231,0.5);border-radius:24px;padding:28px 36px;color:#fff;width:min(90%,460px);box-shadow:0 12px 40px rgba(0,0,0,0.6);font-family:system-ui,-apple-system,sans-serif;';
 
-    card.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-        <h2 style="margin:0;font-size:20px;font-weight:700;color:#00d2ff;">Configurações do Karaokê</h2>
-        <button id="fk-modal-close" style="background:none;border:none;color:#aaa;font-size:24px;cursor:pointer;">&times;</button>
-      </div>
-      <div style="margin-bottom:18px;">
-        <label style="font-size:12px;color:#aaa;font-weight:700;display:block;margin-bottom:8px;">PRESET DO MICROFONE</label>
-        <div style="display:flex;gap:8px;">
-          <button class="fk-preset-btn" data-preset="clean" style="flex:1;padding:10px;border-radius:12px;background:#16213e;border:1px solid #6c5ce7;color:#fff;cursor:pointer;font-weight:600;">🎤 Limpo</button>
-          <button class="fk-preset-btn" data-preset="room" style="flex:1;padding:10px;border-radius:12px;background:#16213e;border:1px solid rgba(255,255,255,0.2);color:#aaa;cursor:pointer;font-weight:600;">🏠 Sala</button>
-          <button class="fk-preset-btn" data-preset="party" style="flex:1;padding:10px;border-radius:12px;background:#16213e;border:1px solid rgba(255,255,255,0.2);color:#aaa;cursor:pointer;font-weight:600;">🎉 Festa</button>
-        </div>
-      </div>
-      <div style="margin-bottom:18px;">
-        <label style="font-size:12px;color:#aaa;font-weight:700;display:block;margin-bottom:8px;">AJUSTE DE TOM (SEMITONS)</label>
-        <div style="display:flex;align-items:center;justify-content:space-between;background:#16213e;padding:8px 16px;border-radius:12px;">
-          <button id="fk-pitch-down" style="padding:6px 14px;border-radius:8px;background:#6c5ce7;border:none;color:#fff;font-weight:bold;cursor:pointer;">-1</button>
-          <span id="fk-pitch-val" style="font-size:18px;font-weight:bold;">0 semitons</span>
-          <button id="fk-pitch-up" style="padding:6px 14px;border-radius:8px;background:#6c5ce7;border:none;color:#fff;font-weight:bold;cursor:pointer;">+1</button>
-        </div>
-      </div>
-      <div style="display:flex;gap:10px;margin-top:24px;">
-        <button id="fk-calib-btn" style="flex:1;padding:12px;border-radius:12px;background:rgba(0,210,255,0.15);border:1px solid #00d2ff;color:#00d2ff;font-weight:700;cursor:pointer;">🎙️ Calibrar Mic (3s)</button>
-        <button id="fk-restart-btn" style="flex:1;padding:12px;border-radius:12px;background:#6c5ce7;border:none;color:#fff;font-weight:700;cursor:pointer;">↻ Reiniciar</button>
-      </div>
-    `;
+    // Header row
+    const headerRow = document.createElement('div');
+    headerRow.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;';
+    const title = document.createElement('h2');
+    title.textContent = 'Configurações do Karaokê';
+    title.style.cssText = 'margin:0;font-size:20px;font-weight:700;color:#00d2ff;';
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '×';
+    closeBtn.style.cssText = 'background:none;border:none;color:#aaa;font-size:24px;cursor:pointer;line-height:1;';
+    closeBtn.onclick = () => modalBg.style.display = 'none';
+    headerRow.appendChild(title);
+    headerRow.appendChild(closeBtn);
+    card.appendChild(headerRow);
 
-    modalBg.appendChild(card);
-    document.body.appendChild(modalBg);
+    // Presets section
+    const presetSection = document.createElement('div');
+    presetSection.style.cssText = 'margin-bottom:18px;';
+    const presetLabel = document.createElement('label');
+    presetLabel.textContent = 'PRESET DO MICROFONE';
+    presetLabel.style.cssText = 'font-size:12px;color:#aaa;font-weight:700;display:block;margin-bottom:8px;';
+    presetSection.appendChild(presetLabel);
 
-    // Event handlers
-    card.querySelector('#fk-modal-close').onclick = () => modalBg.style.display = 'none';
-    modalBg.onclick = (e) => { if (e.target === modalBg) modalBg.style.display = 'none'; };
-
-    card.querySelectorAll('.fk-preset-btn').forEach(btn => {
+    const presetRow = document.createElement('div');
+    presetRow.style.cssText = 'display:flex;gap:8px;';
+    const presets = [
+      { id: 'clean', label: '🎤 Limpo' },
+      { id: 'room',  label: '🏠 Sala' },
+      { id: 'party', label: '🎉 Festa' }
+    ];
+    const presetBtns = [];
+    presets.forEach((p, idx) => {
+      const btn = document.createElement('button');
+      btn.textContent = p.label;
+      btn.dataset.preset = p.id;
+      btn.style.cssText = `flex:1;padding:10px;border-radius:12px;background:#16213e;border:1px solid ${idx === 0 ? '#6c5ce7' : 'rgba(255,255,255,0.2)'};color:${idx === 0 ? '#fff' : '#aaa'};cursor:pointer;font-weight:600;`;
       btn.onclick = () => {
-        card.querySelectorAll('.fk-preset-btn').forEach(b => {
+        presetBtns.forEach(b => {
           b.style.border = '1px solid rgba(255,255,255,0.2)';
           b.style.color = '#aaa';
         });
         btn.style.border = '1px solid #6c5ce7';
         btn.style.color = '#fff';
-        if (this.onPresetChange) this.onPresetChange(btn.dataset.preset);
+        if (this.onPresetChange) this.onPresetChange(p.id);
       };
+      presetBtns.push(btn);
+      presetRow.appendChild(btn);
     });
+    presetSection.appendChild(presetRow);
+    card.appendChild(presetSection);
 
+    // Pitch shift section
+    const pitchSection = document.createElement('div');
+    pitchSection.style.cssText = 'margin-bottom:18px;';
+    const pitchLabel = document.createElement('label');
+    pitchLabel.textContent = 'AJUSTE DE TOM (SEMITONS)';
+    pitchLabel.style.cssText = 'font-size:12px;color:#aaa;font-weight:700;display:block;margin-bottom:8px;';
+    pitchSection.appendChild(pitchLabel);
+
+    const pitchRow = document.createElement('div');
+    pitchRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;background:#16213e;padding:8px 16px;border-radius:12px;';
+    
     let currentShift = 0;
-    const shiftValEl = card.querySelector('#fk-pitch-val');
-    card.querySelector('#fk-pitch-down').onclick = () => {
+    const shiftValEl = document.createElement('span');
+    shiftValEl.textContent = '0 semitons';
+    shiftValEl.style.cssText = 'font-size:16px;font-weight:bold;color:#fff;';
+
+    const downBtn = document.createElement('button');
+    downBtn.textContent = '-1';
+    downBtn.style.cssText = 'padding:6px 14px;border-radius:8px;background:#6c5ce7;border:none;color:#fff;font-weight:bold;cursor:pointer;';
+    downBtn.onclick = () => {
       if (currentShift > -6) {
         currentShift--;
         shiftValEl.textContent = `${currentShift > 0 ? '+' : ''}${currentShift} semitons`;
         if (this.onPitchShiftChange) this.onPitchShiftChange(currentShift);
       }
     };
-    card.querySelector('#fk-pitch-up').onclick = () => {
+
+    const upBtn = document.createElement('button');
+    upBtn.textContent = '+1';
+    upBtn.style.cssText = 'padding:6px 14px;border-radius:8px;background:#6c5ce7;border:none;color:#fff;font-weight:bold;cursor:pointer;';
+    upBtn.onclick = () => {
       if (currentShift < 6) {
         currentShift++;
         shiftValEl.textContent = `${currentShift > 0 ? '+' : ''}${currentShift} semitons`;
@@ -231,17 +255,40 @@ class KaraokeOverlay {
       }
     };
 
-    const calibBtn = card.querySelector('#fk-calib-btn');
+    pitchRow.appendChild(downBtn);
+    pitchRow.appendChild(shiftValEl);
+    pitchRow.appendChild(upBtn);
+    pitchSection.appendChild(pitchRow);
+    card.appendChild(pitchSection);
+
+    // Action buttons row
+    const actionRow = document.createElement('div');
+    actionRow.style.cssText = 'display:flex;gap:10px;margin-top:24px;';
+
+    const calibBtn = document.createElement('button');
+    calibBtn.textContent = '🎙️ Calibrar Mic (3s)';
+    calibBtn.style.cssText = 'flex:1;padding:12px;border-radius:12px;background:rgba(0,210,255,0.15);border:1px solid #00d2ff;color:#00d2ff;font-weight:700;cursor:pointer;';
     calibBtn.onclick = () => {
       if (this.onCalibrate) this.onCalibrate((statusText) => {
         calibBtn.textContent = statusText;
       });
     };
 
-    card.querySelector('#fk-restart-btn').onclick = () => {
+    const restartBtn = document.createElement('button');
+    restartBtn.textContent = '↻ Reiniciar';
+    restartBtn.style.cssText = 'flex:1;padding:12px;border-radius:12px;background:#6c5ce7;border:none;color:#fff;font-weight:700;cursor:pointer;';
+    restartBtn.onclick = () => {
       if (this.onRestart) this.onRestart();
       modalBg.style.display = 'none';
     };
+
+    actionRow.appendChild(calibBtn);
+    actionRow.appendChild(restartBtn);
+    card.appendChild(actionRow);
+
+    modalBg.appendChild(card);
+    modalBg.onclick = (e) => { if (e.target === modalBg) modalBg.style.display = 'none'; };
+    document.body.appendChild(modalBg);
   }
 
   toggleSettingsModal() {
