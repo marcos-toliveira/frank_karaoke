@@ -24,12 +24,13 @@ A portabilidade direta para o Manjaro Linux (KDE Plasma / X11) foi realizada rei
 ### 2.1 Módulos de DSP e Áudio (`desktop/extension/`)
 - **`bandpass.js`**: Filtro IIR Butterworth de 2ª ordem cascateado (passa-baixa a 3500 Hz e passa-alta a 200 Hz, Q = 0.707). Atenua vazamentos graves de caixas de som e agudos de pratos, isolando a faixa vocal humana.
 - **`yin.js`**: Implementação pura do algoritmo YIN (de Cheveigné & Kawahara, 2002) com função de diferença acumulada, normalização CMNDF, threshold relaxado (0.70), interpolação parabólica e cálculo de métrica de confiança vocal e RMS.
+- **`oracle.js`**: Implementação do *Pitch Oracle* para distinção entre a voz do cantor e o vazamento do alto-falante (*speaker bleed*). Cria linha do tempo de referência sincronizada via `timeupdate` e armazena em cache local.
 - **`scoring.js`**: Motor de pontuação contendo os 4 modos oficiais:
   1. *Pitch Match*: Estabilidade e afinação em semitons via distribuição gaussiana ponderada pela confiança.
   2. *Contour*: Avaliação do contorno melódico e variação dinâmica (2 a 6 semitons).
   3. *Intervals*: Qualidade musical dos saltos intervalares de semitons.
   4. *Streak*: Pontuação com multiplicador de combo consecutivo e penalidade em falhas.
-  Suporta calibração de microfone de 3 segundos, histórico de RMS adaptativo e compensação de Pitch Shift (±6 semitons).
+  Suporta calibração de microfone de 3 segundos, histórico de RMS adaptativo, supressão de bleed via Pitch Oracle e compensação de Pitch Shift (±6 semitons).
 - **`overlay.js`**: Camada visual oficial com tela de boas-vindas, visualizador de pitch trail em `<canvas>`, exibição de notas e energia de microfone, modal de configurações, presets (Clean, Room, Party) e tela de celebração final com confetes.
 - **`content.js`**: Script de orquestração do YouTube. Monitora o `<video>` HTML5 via MutationObserver, controla playback e pitch shift (`v.preservesPitch = false; v.playbackRate = Math.pow(2, semitones/12)`), solicita permissão de microfone e alimenta o pipeline.
 - **`manifest.json`**: Manifesto de Extensão Chrome (Manifest V3) para execução no Google Chrome ou em modo Standalone App.
@@ -45,6 +46,7 @@ A portabilidade direta para o Manjaro Linux (KDE Plasma / X11) foi realizada rei
   - Precisão do algoritmo YIN na detecção de frequências senoidais (A4 440 Hz, C4 261.63 Hz, E4 329.63 Hz).
   - Cálculo de conversão Hz <-> MIDI e intervalos em semitons.
   - Atualização dos 4 modos de pontuação.
+  - Supressão de speaker bleed e identificação da voz do cantor via Pitch Oracle.
 
 ---
 
@@ -52,4 +54,19 @@ A portabilidade direta para o Manjaro Linux (KDE Plasma / X11) foi realizada rei
 Execute o teste local de validação matemática do DSP:
 ```bash
 node desktop/tests/test_dsp.js
+```
+Saída da bateria de testes:
+```text
+=== Iniciando Bateria de Testes do Motor DSP de Áudio ===
+Test 1: Conversão Hz <-> MIDI
+  ✓ Conversões matemáticas de pitch validadas com sucesso.
+Test 2: Resposta do Filtro Bandpass
+  ✓ Bandpass isolou voz (440Hz: 0.69) e atenuou grave (50Hz: 0.04)
+Test 3: Detecção de Pitch YIN
+  ✓ YIN detectou 440Hz e 261.63Hz com precisão submétrica e rejeitou ruído.
+Test 4: Sessão de Pontuação
+  ✓ Sessão de pontuação calculou nota=A4, score=92, streak=15x.
+Test 5: PitchOracle & Supressão de Bleed
+  ✓ PitchOracle identificou com sucesso vazamento idêntico (bleed=0.0) e voz do cantor (conf=1.0).
+=== TODOS OS TESTES PASSARAM COM SUCESSO! ===
 ```

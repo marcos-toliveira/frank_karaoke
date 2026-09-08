@@ -44,6 +44,9 @@ class ScoringSession {
     this.calibratedNoiseGate = options.calibratedNoiseGate || this.preset.noiseGateThreshold;
     this.calibratedSingingThreshold = options.calibratedSingingThreshold || this.preset.singingThreshold;
 
+    this.oracle = options.oracle || null;
+    this.videoTimeSeconds = 0;
+
     this.pitchDetector = typeof PitchDetector !== 'undefined' ? new PitchDetector(44100, 0.70) : null;
     this.bandpass = typeof BandpassFilter !== 'undefined' ? new BandpassFilter(44100, 200, 3500) : null;
 
@@ -104,6 +107,14 @@ class ScoringSession {
 
   resume() {
     this.isPaused = false;
+  }
+
+  updateVideoTime(seconds) {
+    this.videoTimeSeconds = seconds;
+  }
+
+  setOracle(oracle) {
+    this.oracle = oracle;
   }
 
   reset() {
@@ -198,8 +209,19 @@ class ScoringSession {
       this.recentPitches.shift();
     }
 
-    // Voice scoring
-    let frameScore = this._scoreVoiceOnly(singerMidi, pitchHz, confidence);
+    // Pitch oracle: check if singer or bleed
+    let singerConf = 1.0;
+    if (this.oracle && this.oracle.isReady && this.videoTimeSeconds > 0) {
+      singerConf = this.oracle.singerConfidence(pitchHz, this.videoTimeSeconds);
+      if (singerConf < 0.3) {
+        // Speaker bleed detected from reference audio
+        this._emit({ pitchHz: 0, noteName: '--', confidence: result.confidence, frameScore: 0, rms });
+        return;
+      }
+    }
+
+    // Voice scoring scaled by singer confidence
+    let frameScore = this._scoreVoiceOnly(singerMidi, pitchHz, confidence) * singerConf;
 
     // Streak mode combo
     if (this.mode === ScoringModes.streak) {

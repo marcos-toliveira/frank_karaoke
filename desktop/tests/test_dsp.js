@@ -102,4 +102,31 @@ assert(lastUpdate.totalScore > 0, `Pontuação deve ser positiva após cantar af
 assert(session.streakCount >= 5, `Modo streak deve incrementar combo consecutivo, obteve: ${session.streakCount}`);
 console.log(`  ✓ Sessão de pontuação calculou nota=${lastUpdate.noteName}, score=${lastUpdate.totalScore}, streak=${session.streakCount}x.`);
 
+// 5. Testes do Pitch Oracle (Detecção e Cancelamento de Bleed)
+console.log('Test 5: PitchOracle & Supressão de Bleed');
+const { PitchOracle } = require('../extension/oracle.js');
+const oracle = new PitchOracle();
+
+// Simula timeline com A4 (440Hz) de 0 a 20 segundos
+oracle.setTimeline('test_video', [
+  { t: 0, p: 440.0 },
+  { t: 5000, p: 440.0 },
+  { t: 10000, p: 440.0 },
+  { t: 15000, p: 0.0 } // silêncio aos 15s
+]);
+
+assert.strictEqual(oracle.getPitchAtSeconds(5.0), 440.0, 'Deve retornar 440Hz aos 5s');
+// Se o microfone captar 440Hz quando a música toca 440Hz -> vazamento (bleed)! Confiança deve ser 0.0
+const bleedConf = oracle.singerConfidence(440.0, 5.0);
+assert(bleedConf < 0.1, `Vazamento idêntico deve ter confiança baixa (< 0.1), obteve: ${bleedConf}`);
+
+// Se o cantor cantar C5 (523.25Hz) enquanto a música toca A4 -> nota diferente! Confiança deve ser alta
+const singerConf = oracle.singerConfidence(523.25, 5.0);
+assert(singerConf > 0.8, `Nota diferente do cantor deve ter confiança alta (> 0.8), obteve: ${singerConf}`);
+
+// Se a música estiver em silêncio (aos 15s) -> certeza de que é o cantor
+const silentRefConf = oracle.singerConfidence(440.0, 15.0);
+assert.strictEqual(silentRefConf, 1.0, 'Silêncio na música deve dar 1.0 de confiança ao cantor');
+console.log('  ✓ PitchOracle identificou com sucesso vazamento idêntico (bleed=0.0) e voz do cantor (conf=1.0).');
+
 console.log('=== TODOS OS TESTES PASSARAM COM SUCESSO! ===');

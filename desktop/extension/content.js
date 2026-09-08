@@ -12,12 +12,17 @@
   let overlay = null;
   let currentVideo = null;
 
+  let pitchOracle = null;
+
   function initKaraoke() {
     if (window._frankKaraokeInitialized) return;
     window._frankKaraokeInitialized = true;
 
+    pitchOracle = new PitchOracle();
+
     // Initialize scoring session
     scoringSession = new ScoringSession({
+      oracle: pitchOracle,
       onUpdate: (data) => {
         if (!overlay) return;
         overlay.updateScore(data.totalScore, data.overallScore, data.noteName, data.streakCount);
@@ -87,16 +92,35 @@
         }
       });
 
+      v.addEventListener('timeupdate', () => {
+        if (scoringSession) scoringSession.updateVideoTime(v.currentTime);
+      });
+
       // Start scoring if already playing
       if (!v.paused && scoringSession) {
         scoringSession.start();
       }
     }
 
-    document.querySelectorAll('video').forEach(bindVideo);
+    function checkVideoUrl() {
+      const url = window.location.href;
+      const match = url.match(/[?&]v=([^&#]+)/) || url.match(/\/shorts\/([^?&#]+)/) || url.match(/\/embed\/([^?&#]+)/);
+      const videoId = match ? match[1] : null;
+      if (videoId && pitchOracle && pitchOracle.videoId !== videoId) {
+        pitchOracle.loadForVideo(videoId);
+      }
+    }
 
+    document.querySelectorAll('video').forEach(bindVideo);
+    checkVideoUrl();
+
+    let lastUrl = location.href;
     const observer = new MutationObserver(() => {
       document.querySelectorAll('video').forEach(bindVideo);
+      if (location.href !== lastUrl) {
+        lastUrl = location.href;
+        checkVideoUrl();
+      }
     });
     observer.observe(document.body || document.documentElement, { childList: true, subtree: true });
   }
